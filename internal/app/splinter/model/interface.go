@@ -4,6 +4,8 @@ type UserInterface interface {
 	Register(request RegisterRequest) (*AuthenticateResponse, error)
 	Authenticate(request AuthenticateRequest) (*AuthenticateResponse, error)
 
+	GetUserById(token Token, id string) (*User, error)
+
 	GetSnippetById(token Token, id string) (*Snippet, error)
 	GetSnippetsByUser(token Token, userId string) ([]Snippet, error)
 	GetSnippetsByLanguage(token Token, language ProgrammingLanguage) ([]Snippet, error)
@@ -12,7 +14,7 @@ type UserInterface interface {
 	DeleteSnippetById(token Token, id string) error
 	VoteSnippet(token Token, request VoteSnippetRequest) error
 
-	PostComment(token Token, request PostCommentRequest) (*Comment, error)
+	PostComment(token Token, snippetId string, request PostCommentRequest) (*Comment, error)
 	GetCommentsBySnippetId(token Token, snippetId string) ([]Comment, error)
 
 	GetSubscriptions(token Token) ([]Subscription, error)
@@ -52,6 +54,5 @@ type VoteSnippetRequest struct {
 }
 
 type PostCommentRequest struct {
-	SnippetId string
 	Contents  string
 }

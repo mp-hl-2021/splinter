@@ -36,12 +36,12 @@ type Snippet struct {
 	Id       string
 	Contents string
 	Language ProgrammingLanguage
-	Author   User
+	AuthorId string
 	Rating   Rating
 }
 
 type Comment struct {
 	SnippetId string
 	Contents  string
-	Author    User
+	AuthorId  string
 }
