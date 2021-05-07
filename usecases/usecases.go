@@ -47,9 +47,10 @@ type UserInterface interface {
 	GetSnippetsByLanguage(language ProgrammingLanguage) ([]Snippet, error)
 	GetSnippet(snippet SnippetId) (Snippet, error)
 	DeleteSnippet(snippet SnippetId) error
-	Vote(snippet Snippet, vote int /* ±1 */) error
+	Vote(snippet SnippetId, vote int /* ±1 */) error
 
 	PostComment(contents string, snippet SnippetId) (Comment, error)
+	GetComments(snippet SnippetId) ([]Comment, error)
 	DeleteComment(comment CommentId) error
 }
 
@@ -100,7 +101,7 @@ func (d DummyUserInterface) DeleteSnippet(snippet SnippetId) error {
 	return nil
 }
 
-func (d DummyUserInterface) Vote(snippet Snippet, vote int) error {
+func (d DummyUserInterface) Vote(snippet SnippetId, vote int) error {
 	// TODO: implement me
 	return nil
 }
@@ -108,6 +109,11 @@ func (d DummyUserInterface) Vote(snippet Snippet, vote int) error {
 func (d DummyUserInterface) PostComment(contents string, snippet SnippetId) (Comment, error) {
 	// TODO: implement me
 	return Comment{Contents: contents, Snippet: snippet}, nil
+}
+
+func (d DummyUserInterface) GetComments(snippet SnippetId) ([]Comment, error) {
+	// TODO: implement me
+	return []Comment{}, nil
 }
 
 func (d DummyUserInterface) DeleteComment(comment CommentId) error {
