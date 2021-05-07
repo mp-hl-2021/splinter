@@ -40,6 +40,7 @@ type UserInterface interface {
 	CreateAccount(username, password string) (User, error)
 	Authenticate(username, password string) (Token, error)
 	GetCurrentUser() (User, error)
+	GetUser(user UserId) (User, error)
 
 	PostSnippet(contents string, language ProgrammingLanguage) (Snippet, error)
 	GetSnippetsByUser(user UserId) ([]Snippet, error)
@@ -67,6 +68,11 @@ func (d DummyUserInterface) Authenticate(username, password string) (Token, erro
 func (d DummyUserInterface) GetCurrentUser() (User, error) {
 	// TODO: implement me
 	return User{Username: "anonymous"}, nil
+}
+
+func (d DummyUserInterface) GetUser(user UserId) (User, error) {
+	// TODO: implement me
+	return User{Id: user, Username: "anonymous"}, nil
 }
 
 func (d DummyUserInterface) PostSnippet(contents string, language ProgrammingLanguage) (Snippet, error) {
