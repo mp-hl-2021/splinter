@@ -5,7 +5,6 @@ package v1
 
 import (
 	"encoding/json"
-	"github.com/mp-hl-2021/splinter/api"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
 )
@@ -22,13 +21,13 @@ type postSnippetResponse struct {
 func (a *Api) endpointPostSnippet(w http.ResponseWriter, r *http.Request) {
 	var b postSnippetBody
 	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
-		api.WriteError(w, err, http.StatusBadRequest)
+		WriteError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	snippet, err := a.useCases.PostSnippet(b.Contents, b.Language)
 	if err != nil {
-		api.WriteError(w, err, http.StatusForbidden)
+		WriteError(w, err, http.StatusForbidden)
 		return
 	}
 

@@ -5,7 +5,6 @@ package v1
 
 import (
 	"encoding/json"
-	"github.com/mp-hl-2021/splinter/api"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
 )
@@ -17,7 +16,7 @@ type getCurrentUserResponse struct {
 func (a *Api) endpointGetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	user, err := a.useCases.GetCurrentUser()
 	if err != nil {
-		api.WriteError(w, err, http.StatusNotFound)
+		WriteError(w, err, http.StatusNotFound)
 		return
 	}
 

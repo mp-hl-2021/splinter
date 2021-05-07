@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
@@ -30,4 +31,17 @@ func (a *Api) Router(router *mux.Router) {
 	router.HandleFunc("/snippets/{snippet}/comments", a.endpointGetComments).Methods(http.MethodGet)
 	router.HandleFunc("/snippets/{snippet}/comments", a.endpointPostComment).Methods(http.MethodPost)
 	router.HandleFunc("/comments/{comment}", a.endpointDeleteComment).Methods(http.MethodDelete)
+}
+
+type errorResponse struct {
+	StatusCode int
+	Error      string
+}
+
+func WriteError(w http.ResponseWriter, err error, statusCode int) {
+	w.WriteHeader(statusCode)
+	_ = json.NewEncoder(w).Encode(errorResponse{
+		StatusCode: statusCode,
+		Error:      err.Error(),
+	})
 }
