@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
+	"strconv"
 )
 
 type getUserResponse struct {
@@ -16,9 +17,12 @@ type getUserResponse struct {
 
 func (a *Api) endpointGetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	userId := usecases.UserId(params["user"])
-
-	user, err := a.useCases.GetUser(userId)
+	userId, err := strconv.ParseUint(params["user"], 10, 64)
+	if err != nil {
+		WriteError(w, err, http.StatusBadRequest)
+		return
+	}
+	user, err := a.useCases.GetUser(usecases.UserId(userId))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return
