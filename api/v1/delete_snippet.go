@@ -7,13 +7,17 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
+	"strconv"
 )
 
 func (a *Api) endpointDeleteSnippet(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	snippetId := usecases.SnippetId(params["snippet"])
-
-	err := a.useCases.DeleteSnippet(snippetId)
+	snippetId, err := strconv.ParseUint(params["snippet"], 10, 64)
+	if err != nil {
+		WriteError(w, err, http.StatusBadRequest)
+		return
+	}
+	err = a.useCases.DeleteSnippet(usecases.SnippetId(snippetId))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return

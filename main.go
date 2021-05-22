@@ -1,18 +1,39 @@
 package main
 
 import (
+	"flag"
 	"github.com/mp-hl-2021/splinter/api"
+	"github.com/mp-hl-2021/splinter/auth"
+	"github.com/mp-hl-2021/splinter/storage"
 	"github.com/mp-hl-2021/splinter/usecases"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
 )
 
 func main() {
-	service := api.NewApi(usecases.DummyUserInterface{})
+	privateKeyPath := flag.String("privateKey", "app.rsa", "file path")
+	publicKeyPath := flag.String("publicKey", "app.rsa.pub", "file path")
+	flag.Parse()
+
+	privateKeyBytes, err := ioutil.ReadFile(*privateKeyPath)
+	publicKeyBytes, err := ioutil.ReadFile(*publicKeyPath)
+
+	a, err := auth.NewJwtHandler(privateKeyBytes, publicKeyBytes, 100*time.Minute)
+	if err != nil {
+		panic(err)
+	}
+
+	userInterface := &usecases.DummyUserInterface {
+		Storage: storage.NewMemory(),
+		Auth: a,
+	}
+
+	service := api.NewApi(userInterface)
 	addr := "127.0.0.1:5000"
 
-	server := http.Server{
+	server := http.Server {
 		Addr:         addr,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,

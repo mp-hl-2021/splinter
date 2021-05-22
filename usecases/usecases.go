@@ -1,12 +1,24 @@
 package usecases
 
-import "time"
+import (
+	"errors"
+	"fmt"
+	"github.com/mp-hl-2021/splinter/auth"
+	"github.com/mp-hl-2021/splinter/storage"
+	"golang.org/x/crypto/bcrypt"
+	"time"
+)
 
 type ProgrammingLanguage string
-type UserId string
-type SnippetId string
-type CommentId string
+type UserId uint
+type SnippetId uint
+type CommentId uint
 type Token string
+
+var (
+	ErrInvalidLogin    = errors.New("login not found")
+	ErrInvalidPassword = errors.New("invalid password")
+)
 
 type User struct {
 	Id       UserId // Unique identifier, persists through username changes
@@ -54,16 +66,50 @@ type UserInterface interface {
 	DeleteComment(comment CommentId) error
 }
 
-type DummyUserInterface struct{}
-
-func (d DummyUserInterface) CreateAccount(username, password string) (User, error) {
-	// TODO: implement me
-	return User{Username: username}, nil
+type DummyUserInterface struct {
+	Auth    auth.Interface
+	Storage storage.Interface
 }
 
-func (d DummyUserInterface) Authenticate(username, password string) (Token, error) {
-	// TODO: implement me
-	return "", nil
+func (d *DummyUserInterface) CreateAccount(username, password string) (User, error) {
+	fmt.Printf("CreateAccount: %s %s\n\n", username, password)
+	if err := validateUsername(username); err != nil {
+		return User{}, err
+	}
+	if err := validatePassword(password); err != nil {
+		return User{}, err
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return User{}, err
+	}
+	acc, err := d.Storage.CreateAccount(storage.Credentials{
+		Username: username,
+		Password: string(hashedPassword),
+	})
+	if err != nil {
+		return User{}, err
+	}
+	return User{Id: UserId(acc.Id)}, nil
+}
+
+func (d *DummyUserInterface) Authenticate(username, password string) (Token, error) {
+	fmt.Printf("Authenticate: %s %s\n\n", username, password)
+	if err := validateUsername(username); err != nil {
+		return "", err
+	}
+	if err := validatePassword(password); err != nil {
+		return "", err
+	}
+	acc, err := d.Storage.GetAccountByUsername(username)
+	if err != nil {
+		return "", ErrInvalidLogin
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(acc.Credentials.Password), []byte(password)); err != nil {
+		return "", ErrInvalidPassword
+	}
+	token, err := d.Auth.IssueToken(acc.Id)
+	return Token(token), err
 }
 
 func (d DummyUserInterface) GetCurrentUser() (User, error) {

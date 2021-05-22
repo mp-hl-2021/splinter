@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
+	"strconv"
 )
 
 type postCommentBody struct {
@@ -20,15 +21,18 @@ type postCommentResponse struct {
 
 func (a *Api) endpointPostComment(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	snippetId := usecases.SnippetId(params["snippet"])
-
+	snippetId, err := strconv.ParseUint(params["snippet"], 10, 64)
+	if err != nil {
+		WriteError(w, err, http.StatusBadRequest)
+		return
+	}
 	var b postCommentBody
 	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
 		WriteError(w, err, http.StatusBadRequest)
 		return
 	}
 
-	Comment, err := a.useCases.PostComment(b.Contents, snippetId)
+	Comment, err := a.useCases.PostComment(b.Contents, usecases.SnippetId(snippetId))
 	if err != nil {
 		WriteError(w, err, http.StatusForbidden)
 		return

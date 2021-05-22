@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
+	"strconv"
 )
 
 type getCommentsResponse struct {
@@ -16,9 +17,12 @@ type getCommentsResponse struct {
 
 func (a *Api) endpointGetComments(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	snippetId := usecases.SnippetId(params["snippet"])
-
-	comments, err := a.useCases.GetComments(snippetId)
+	snippetId, err := strconv.ParseUint(params["snippet"], 10, 64)
+	if err != nil {
+		WriteError(w, err, http.StatusBadRequest)
+		return
+	}
+	comments, err := a.useCases.GetComments(usecases.SnippetId(snippetId))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return

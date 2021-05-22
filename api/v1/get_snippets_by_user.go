@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
+	"strconv"
 )
 
 type getSnippetsByUserResponse struct {
@@ -16,9 +17,13 @@ type getSnippetsByUserResponse struct {
 
 func (a *Api) endpointGetSnippetsByUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	userId := usecases.UserId(params["user"])
+	userId, err := strconv.ParseUint(params["user"], 10, 64)
+	if err != nil {
+		WriteError(w, err, http.StatusBadRequest)
+		return
+	}
 
-	snippets, err := a.useCases.GetSnippetsByUser(userId)
+	snippets, err := a.useCases.GetSnippetsByUser(usecases.UserId(userId))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return
