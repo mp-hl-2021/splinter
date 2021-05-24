@@ -1,5 +1,5 @@
 # splinter
-Platform for sharing, discussing and analyzing (bizzare) code snippets
+Platform for sharing, discussing and analyzing (bizarre) code snippets
 
 ## Состав команды
 
