@@ -25,9 +25,9 @@ func main() {
 		panic(err)
 	}
 
-	userInterface := &usecases.DummyUserInterface {
-		Storage: storage.NewMemory(),
-		Auth: a,
+	userInterface := &usecases.DelegatedUserInterface{
+		UserStorage: storage.NewMemory(),
+		Auth:        a,
 	}
 
 	service := api.NewApi(userInterface)
