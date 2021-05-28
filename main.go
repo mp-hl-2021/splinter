@@ -15,6 +15,7 @@ import (
 func main() {
 	privateKeyPath := flag.String("privateKey", "app.rsa", "file path")
 	publicKeyPath := flag.String("publicKey", "app.rsa.pub", "file path")
+	connStr := flag.String("connStr", "user=postgres password=postgres host=db dbname=postgres sslmode=disable", "postgres connection string")
 	flag.Parse()
 
 	privateKeyBytes, err := ioutil.ReadFile(*privateKeyPath)
@@ -25,15 +26,21 @@ func main() {
 		panic(err)
 	}
 
+	postgres, err := storage.NewPostgres(*connStr)
+	if err != nil {
+		panic(err)
+	}
+
 	userInterface := &usecases.DelegatedUserInterface{
-		UserStorage: storage.NewMemory(),
-		Auth:        a,
+		UserStorage:    postgres,
+		SnippetStorage: postgres,
+		Auth:           a,
 	}
 
 	service := api.NewApi(userInterface)
 	addr := "127.0.0.1:5000"
 
-	server := http.Server {
+	server := http.Server{
 		Addr:         addr,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
