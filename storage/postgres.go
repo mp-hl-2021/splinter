@@ -193,18 +193,13 @@ delete from comment where id = $1
 }
 
 func (p Postgres) CreateAccount(cred auth.Credentials) (auth.Account, error) {
-	res, err := p.db.Exec(`
-insert into "user" (username, password) values ($1, $2)
-`, cred.Username, cred.Password)
+	var id int
+	err := p.db.QueryRow(`
+insert into "user" (username, password) values ($1, $2) returning (id)
+`, cred.Username, cred.Password).Scan(&id)
 	if err != nil {
 		return auth.Account{}, err
 	}
-
-	id, err := res.LastInsertId()
-	if err != nil {
-		return auth.Account{}, err
-	}
-
 	return auth.Account{
 		Id:          uint(id),
 		Credentials: cred,
@@ -224,11 +219,10 @@ select id, username, password from "user" where id = $1
 }
 
 func (p Postgres) GetAccountByUsername(username string) (auth.Account, error) {
-	row := p.db.QueryRow(`
-select id, username, password from "user" where username = $1
-`, username)
 	var a auth.Account
-	err := row.Scan(&a.Id, &a.Username, &a.Password)
+	err := p.db.QueryRow(`
+select id, username, password from "user" where username = $1
+`, username).Scan(&a.Id, &a.Username, &a.Password)
 	if err != nil {
 		return auth.Account{}, err
 	}
