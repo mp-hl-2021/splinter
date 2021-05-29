@@ -1,4 +1,4 @@
-package usecases
+package auth
 
 import (
 	"errors"
@@ -30,7 +30,7 @@ func checkInvalidCharacters(s string) bool {
 	return false
 }
 
-func validateUsername(username string) error {
+func ValidateUsername(username string) error {
 	if flag := checkInvalidCharacters(username); flag {
 		return ErrUsernameInvalidCharacters
 	}
@@ -43,7 +43,7 @@ func validateUsername(username string) error {
 	return nil
 }
 
-func validatePassword(password string) error {
+func ValidatePassword(password string) error {
 	if flag := checkInvalidCharacters(password); flag {
 		return ErrPasswordInvalidCharacters
 	}

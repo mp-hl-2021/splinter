@@ -1,4 +1,4 @@
-package storage
+package auth
 
 import "errors"
 
@@ -17,7 +17,7 @@ type Credentials struct {
 	Password string
 }
 
-type Interface interface {
+type UserStorage interface {
 	CreateAccount(cred Credentials) (Account, error)
 	GetAccountById(id uint) (Account, error)
 	GetAccountByUsername(username string) (Account, error)
