@@ -38,7 +38,7 @@ func main() {
 	}
 
 	service := api.NewApi(userInterface)
-	addr := "127.0.0.1:5000"
+	addr := ":5000"
 
 	server := http.Server{
 		Addr:         addr,
