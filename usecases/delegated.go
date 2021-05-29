@@ -51,7 +51,7 @@ func (u *DelegatedUserInterface) CreateAccount(username, password string) (User,
 	if err != nil {
 		return User{}, err
 	}
-	return User{Id: UserId(acc.Id)}, nil
+	return User{Id: UserId(acc.Id), Username: username}, nil
 }
 
 func (u *DelegatedUserInterface) Authenticate(username, password string) (Token, error) {
