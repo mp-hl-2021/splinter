@@ -1,7 +1,7 @@
 create table "user"
 (
     id       serial primary key,
-    username varchar not null,
+    username varchar unique not null,
     password varchar not null
 );
 
