@@ -15,3 +15,8 @@
 # vendor/
 
 .idea
+
+# Key files
+
+app.rsa
+app.rsa.pub
