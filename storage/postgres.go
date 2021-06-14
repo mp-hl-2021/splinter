@@ -26,15 +26,11 @@ func (p Postgres) Close() error {
 }
 
 func (p Postgres) AddSnippet(snippet usecases.Snippet) (usecases.SnippetId, error) {
-	res, err := p.db.Exec(`
+	var id int
+	err := p.db.QueryRow(`
 	insert into snippet (contents, language, author, createdAt) values
-	($1, $2, $3, now());
-`, snippet.Contents, snippet.Language, snippet.Author)
-	if err != nil {
-		return usecases.SnippetId(0), err
-	}
-
-	id, err := res.LastInsertId()
+	($1, $2, $3, now()) returning (id);
+`, snippet.Contents, snippet.Language, snippet.Author).Scan(&id)
 	if err != nil {
 		return usecases.SnippetId(0), err
 	}
@@ -55,7 +51,7 @@ select id, contents, language, author, likes, dislikes, createdAt from snippet w
 
 	for rows.Next() {
 		var s usecases.Snippet
-		err = rows.Scan(&s.Id, &s.Contents, &s.Language, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
+		err = rows.Scan(&s.Id, &s.Contents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
 		if err != nil {
 			return []usecases.Snippet{}, err
 		}
@@ -78,7 +74,7 @@ select id, contents, language, author, likes, dislikes, createdAt from snippet w
 
 	for rows.Next() {
 		var s usecases.Snippet
-		err = rows.Scan(&s.Id, &s.Contents, &s.Language, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
+		err = rows.Scan(&s.Id, &s.Contents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
 		if err != nil {
 			return []usecases.Snippet{}, err
 		}
@@ -94,7 +90,7 @@ select id, contents, language, author, likes, dislikes, createdAt from snippet w
 `, snippet)
 
 	var s usecases.Snippet
-	err := row.Scan(&s.Id, &s.Contents, &s.Language, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
+	err := row.Scan(&s.Id, &s.Contents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
 	if err != nil {
 		return usecases.Snippet{}, err
 	}
@@ -133,14 +129,10 @@ select vote from vote where snippet = $1 and user = $2;
 }
 
 func (p Postgres) AddComment(comment usecases.Comment) (usecases.CommentId, error) {
-	res, err := p.db.Exec(`
-insert into comment (contents, snippet, author, createdAt) values ($1, $2, $3, now());
-`, comment.Contents, comment.Snippet, comment.Author)
-	if err != nil {
-		return 0, err
-	}
-
-	id, err := res.LastInsertId()
+	var id int
+	err := p.db.QueryRow(`
+insert into comment (contents, snippet, author, createdAt) values ($1, $2, $3, now()) returning (id);
+`, comment.Contents, comment.Snippet, comment.Author).Scan(&id)
 	if err != nil {
 		return 0, err
 	}

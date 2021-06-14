@@ -46,7 +46,7 @@ func (a *Api) Router(router *mux.Router) {
 	router.Handle("/snippets/language/{language}", amw(http.HandlerFunc(a.endpointGetSnippetsByLanguage))).Methods(http.MethodGet)
 	router.Handle("/snippets/{snippet}", amw(http.HandlerFunc(a.endpointGetSnippet))).Methods(http.MethodGet)
 	router.Handle("/snippets/{snippet}", amw(http.HandlerFunc(a.endpointDeleteSnippet))).Methods(http.MethodDelete)
-	router.Handle("/snippets/{snippet}/vote", amw(http.HandlerFunc(a.endpointDeleteSnippet))).Methods(http.MethodDelete)
+	router.Handle("/snippets/{snippet}/vote", amw(http.HandlerFunc(a.endpointVote))).Methods(http.MethodPost)
 
 	router.Handle("/snippets/{snippet}/comments", amw(http.HandlerFunc(a.endpointGetComments))).Methods(http.MethodGet)
 	router.Handle("/snippets/{snippet}/comments", amw(http.HandlerFunc(a.endpointPostComment))).Methods(http.MethodPost)

@@ -9,6 +9,7 @@ import (
 var (
 	MustBeSnippetAuthorErr = errors.New("must be snippet's author")
 	MustBeCommentAuthorErr = errors.New("must be comment's author")
+	InvalidVoteErr = errors.New("invalid vote")
 )
 
 type SnippetStorage interface {
@@ -157,6 +158,14 @@ func (u DelegatedUserInterface) DeleteSnippet(current UserId, snippet SnippetId)
 }
 
 func (u DelegatedUserInterface) Vote(current UserId, snippet SnippetId, vote int) error {
+	if vote < -1 || vote > 1 {
+		return InvalidVoteErr
+	}
+
+	if _, err := u.SnippetStorage.GetSnippet(snippet); err != nil {
+		return err
+	}
+
 	return u.SnippetStorage.Vote(current, snippet, vote)
 }
 
