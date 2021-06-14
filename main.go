@@ -37,7 +37,7 @@ func main() {
 		Auth:           a,
 	}
 
-	service := api.NewApi(userInterface)
+	service := api.NewApi(userInterface, a)
 	addr := ":5000"
 
 	server := http.Server{

@@ -23,7 +23,7 @@ func (a *Api) endpointGetSnippetsByUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	snippets, err := a.useCases.GetSnippetsByUser(usecases.UserId(userId))
+	snippets, err := a.useCases.GetSnippetsByUser(usecases.UserId(userId), GetCurrentUid(r))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return

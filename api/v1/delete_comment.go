@@ -17,7 +17,7 @@ func (a *Api) endpointDeleteComment(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, err, http.StatusBadRequest)
 		return
 	}
-	err = a.useCases.DeleteComment(usecases.CommentId(commentId))
+	err = a.useCases.DeleteComment(GetCurrentUid(r), usecases.CommentId(commentId))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return

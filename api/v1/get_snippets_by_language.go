@@ -18,7 +18,7 @@ func (a *Api) endpointGetSnippetsByLanguage(w http.ResponseWriter, r *http.Reque
 	params := mux.Vars(r)
 	language := usecases.ProgrammingLanguage(params["language"])
 
-	snippets, err := a.useCases.GetSnippetsByLanguage(language)
+	snippets, err := a.useCases.GetSnippetsByLanguage(language, GetCurrentUid(r))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return

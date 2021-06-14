@@ -21,7 +21,7 @@ func (a *Api) endpointVote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.useCases.Vote(b.Snippet, b.Vote); err != nil {
+	if err := a.useCases.Vote(GetCurrentUid(r), b.Snippet, b.Vote); err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return
 	}

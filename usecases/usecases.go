@@ -47,17 +47,16 @@ type Snippet struct {
 type UserInterface interface {
 	CreateAccount(username, password string) (User, error)
 	Authenticate(username, password string) (Token, error)
-	GetCurrentUser() (User, error)
 	GetUser(user UserId) (User, error)
 
-	PostSnippet(contents string, language ProgrammingLanguage) (Snippet, error)
-	GetSnippetsByUser(user UserId) ([]Snippet, error)
-	GetSnippetsByLanguage(language ProgrammingLanguage) ([]Snippet, error)
-	GetSnippet(snippet SnippetId) (Snippet, error)
-	DeleteSnippet(snippet SnippetId) error
-	Vote(snippet SnippetId, vote int /* ±1 */) error
+	PostSnippet(author UserId, contents string, language ProgrammingLanguage) (Snippet, error)
+	GetSnippetsByUser(user UserId, current UserId) ([]Snippet, error)
+	GetSnippetsByLanguage(language ProgrammingLanguage, current UserId) ([]Snippet, error)
+	GetSnippet(current UserId, snippet SnippetId) (Snippet, error)
+	DeleteSnippet(current UserId, snippet SnippetId) error
+	Vote(current UserId, snippet SnippetId, vote int /* ±1 */) error
 
-	PostComment(contents string, snippet SnippetId) (Comment, error)
+	PostComment(author UserId, contents string, snippet SnippetId) (Comment, error)
 	GetComments(snippet SnippetId) ([]Comment, error)
-	DeleteComment(comment CommentId) error
+	DeleteComment(current UserId, comment CommentId) error
 }
