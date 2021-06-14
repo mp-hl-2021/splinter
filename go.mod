@@ -8,5 +8,6 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/lib/pq v1.10.2
+	github.com/prometheus/client_golang v1.11.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 )

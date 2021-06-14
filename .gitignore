@@ -20,3 +20,5 @@
 
 app.rsa
 app.rsa.pub
+./splinter
+.token
