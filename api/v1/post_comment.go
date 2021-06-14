@@ -32,7 +32,7 @@ func (a *Api) endpointPostComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Comment, err := a.useCases.PostComment(b.Contents, usecases.SnippetId(snippetId))
+	Comment, err := a.useCases.PostComment(GetCurrentUid(r), b.Contents, usecases.SnippetId(snippetId))
 	if err != nil {
 		WriteError(w, err, http.StatusForbidden)
 		return

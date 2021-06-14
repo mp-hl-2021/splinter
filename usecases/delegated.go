@@ -9,6 +9,7 @@ import (
 var (
 	MustBeSnippetAuthorErr = errors.New("must be snippet's author")
 	MustBeCommentAuthorErr = errors.New("must be comment's author")
+	InvalidVoteErr = errors.New("invalid vote")
 )
 
 type SnippetStorage interface {
@@ -30,7 +31,6 @@ type DelegatedUserInterface struct {
 	Auth           auth.Authenticator
 	UserStorage    auth.UserStorage
 	SnippetStorage SnippetStorage
-	CurrentToken   string
 }
 
 func (u *DelegatedUserInterface) CreateAccount(username, password string) (User, error) {
@@ -72,15 +72,6 @@ func (u *DelegatedUserInterface) Authenticate(username, password string) (Token,
 	return Token(token), err
 }
 
-func (u DelegatedUserInterface) GetCurrentUser() (User, error) {
-	uid, err := u.Auth.UserIdByToken(u.CurrentToken)
-	if err != nil {
-		return User{}, err
-	}
-
-	return u.GetUser(UserId(uid))
-}
-
 func (u DelegatedUserInterface) GetUser(user UserId) (User, error) {
 	a, err := u.UserStorage.GetAccountById(uint(user))
 	if err != nil {
@@ -90,16 +81,11 @@ func (u DelegatedUserInterface) GetUser(user UserId) (User, error) {
 	return User{Id: UserId(a.Id), Username: a.Username}, nil
 }
 
-func (u DelegatedUserInterface) PostSnippet(contents string, language ProgrammingLanguage) (Snippet, error) {
-	uid, err := u.Auth.UserIdByToken(u.CurrentToken)
-	if err != nil {
-		return Snippet{}, err
-	}
-
+func (u DelegatedUserInterface) PostSnippet(author UserId, contents string, language ProgrammingLanguage) (Snippet, error) {
 	id, err := u.SnippetStorage.AddSnippet(Snippet{
 		Contents: contents,
 		Language: language,
-		Author:   UserId(uid),
+		Author:   author,
 	})
 
 	if err != nil {
@@ -109,19 +95,14 @@ func (u DelegatedUserInterface) PostSnippet(contents string, language Programmin
 	return u.SnippetStorage.GetSnippet(id)
 }
 
-func (u DelegatedUserInterface) GetSnippetsByUser(user UserId) ([]Snippet, error) {
-	uid, err := u.Auth.UserIdByToken(u.CurrentToken)
-	if err != nil {
-		return []Snippet{}, err
-	}
-
+func (u DelegatedUserInterface) GetSnippetsByUser(user UserId, current UserId) ([]Snippet, error) {
 	s, err := u.SnippetStorage.GetSnippetsByUser(user)
 	if err != nil {
 		return []Snippet{}, err
 	}
 
 	for i := range s {
-		vote, err := u.SnippetStorage.GetVote(UserId(uid), s[i].Id)
+		vote, err := u.SnippetStorage.GetVote(current, s[i].Id)
 		if err != nil {
 			return []Snippet{}, err
 		}
@@ -131,19 +112,14 @@ func (u DelegatedUserInterface) GetSnippetsByUser(user UserId) ([]Snippet, error
 	return s, nil
 }
 
-func (u DelegatedUserInterface) GetSnippetsByLanguage(language ProgrammingLanguage) ([]Snippet, error) {
-	uid, err := u.Auth.UserIdByToken(u.CurrentToken)
-	if err != nil {
-		return []Snippet{}, err
-	}
-
+func (u DelegatedUserInterface) GetSnippetsByLanguage(language ProgrammingLanguage, current UserId) ([]Snippet, error) {
 	s, err := u.SnippetStorage.GetSnippetsByLanguage(language)
 	if err != nil {
 		return []Snippet{}, err
 	}
 
 	for i := range s {
-		vote, err := u.SnippetStorage.GetVote(UserId(uid), s[i].Id)
+		vote, err := u.SnippetStorage.GetVote(current, s[i].Id)
 		if err != nil {
 			return []Snippet{}, err
 		}
@@ -153,18 +129,13 @@ func (u DelegatedUserInterface) GetSnippetsByLanguage(language ProgrammingLangua
 	return s, nil
 }
 
-func (u DelegatedUserInterface) GetSnippet(snippet SnippetId) (Snippet, error) {
-	uid, err := u.Auth.UserIdByToken(u.CurrentToken)
-	if err != nil {
-		return Snippet{}, err
-	}
-
+func (u DelegatedUserInterface) GetSnippet(current UserId, snippet SnippetId) (Snippet, error) {
 	s, err := u.SnippetStorage.GetSnippet(snippet)
 	if err != nil {
 		return Snippet{}, err
 	}
 
-	vote, err := u.SnippetStorage.GetVote(UserId(uid), s.Id)
+	vote, err := u.SnippetStorage.GetVote(current, s.Id)
 	if err != nil {
 		return Snippet{}, err
 	}
@@ -173,43 +144,36 @@ func (u DelegatedUserInterface) GetSnippet(snippet SnippetId) (Snippet, error) {
 	return s, nil
 }
 
-func (u DelegatedUserInterface) DeleteSnippet(snippet SnippetId) error {
-	uid, err := u.Auth.UserIdByToken(u.CurrentToken)
-	if err != nil {
-		return err
-	}
-
+func (u DelegatedUserInterface) DeleteSnippet(current UserId, snippet SnippetId) error {
 	s, err := u.SnippetStorage.GetSnippet(snippet)
 	if err != nil {
 		return err
 	}
 
-	if uint(s.Author) != uid {
+	if s.Author != current {
 		return MustBeSnippetAuthorErr
 	}
 
 	return u.SnippetStorage.DeleteSnippet(snippet)
 }
 
-func (u DelegatedUserInterface) Vote(snippet SnippetId, vote int) error {
-	uid, err := u.Auth.UserIdByToken(u.CurrentToken)
-	if err != nil {
+func (u DelegatedUserInterface) Vote(current UserId, snippet SnippetId, vote int) error {
+	if vote < -1 || vote > 1 {
+		return InvalidVoteErr
+	}
+
+	if _, err := u.SnippetStorage.GetSnippet(snippet); err != nil {
 		return err
 	}
 
-	return u.SnippetStorage.Vote(UserId(uid), snippet, vote)
+	return u.SnippetStorage.Vote(current, snippet, vote)
 }
 
-func (u DelegatedUserInterface) PostComment(contents string, snippet SnippetId) (Comment, error) {
-	uid, err := u.Auth.UserIdByToken(u.CurrentToken)
-	if err != nil {
-		return Comment{}, err
-	}
-
+func (u DelegatedUserInterface) PostComment(author UserId, contents string, snippet SnippetId) (Comment, error) {
 	id, err := u.SnippetStorage.AddComment(Comment{
 		Contents: contents,
 		Snippet:  snippet,
-		Author:   UserId(uid),
+		Author:   author,
 	})
 
 	if err != nil {
@@ -223,18 +187,13 @@ func (u DelegatedUserInterface) GetComments(snippet SnippetId) ([]Comment, error
 	return u.SnippetStorage.GetComments(snippet)
 }
 
-func (u DelegatedUserInterface) DeleteComment(comment CommentId) error {
-	uid, err := u.Auth.UserIdByToken(u.CurrentToken)
-	if err != nil {
-		return err
-	}
-
+func (u DelegatedUserInterface) DeleteComment(current UserId, comment CommentId) error {
 	c, err := u.SnippetStorage.GetComment(comment)
 	if err != nil {
 		return err
 	}
 
-	if uint(c.Author) != uid {
+	if c.Author != current {
 		return MustBeCommentAuthorErr
 	}
 

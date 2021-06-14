@@ -5,23 +5,31 @@ package v1
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
+	"strconv"
 )
 
 type voteBody struct {
-	Snippet usecases.SnippetId
 	Vote    int
 }
 
 func (a *Api) endpointVote(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
 	var b voteBody
 	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
 		WriteError(w, err, http.StatusBadRequest)
 		return
 	}
 
-	if err := a.useCases.Vote(b.Snippet, b.Vote); err != nil {
+	snippetId, err := strconv.ParseUint(params["snippet"], 10, 64)
+	if err != nil {
+		WriteError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	if err := a.useCases.Vote(GetCurrentUid(r), usecases.SnippetId(snippetId), b.Vote); err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return
 	}

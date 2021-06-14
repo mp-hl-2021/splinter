@@ -14,7 +14,7 @@ type getCurrentUserResponse struct {
 }
 
 func (a *Api) endpointGetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	user, err := a.useCases.GetCurrentUser()
+	user, err := a.useCases.GetUser(GetCurrentUid(r))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return

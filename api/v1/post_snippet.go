@@ -25,7 +25,7 @@ func (a *Api) endpointPostSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	snippet, err := a.useCases.PostSnippet(b.Contents, b.Language)
+	snippet, err := a.useCases.PostSnippet(GetCurrentUid(r), b.Contents, b.Language)
 	if err != nil {
 		WriteError(w, err, http.StatusForbidden)
 		return

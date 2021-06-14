@@ -17,7 +17,7 @@ func (a *Api) endpointDeleteSnippet(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, err, http.StatusBadRequest)
 		return
 	}
-	err = a.useCases.DeleteSnippet(usecases.SnippetId(snippetId))
+	err = a.useCases.DeleteSnippet(GetCurrentUid(r), usecases.SnippetId(snippetId))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return
