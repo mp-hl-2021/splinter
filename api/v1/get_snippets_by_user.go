@@ -6,13 +6,13 @@ package v1
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 	"strconv"
 )
 
 type getSnippetsByUserResponse struct {
-	Snippets []usecases.Snippet
+	Snippets []types.Snippet
 }
 
 func (a *Api) endpointGetSnippetsByUser(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,7 @@ func (a *Api) endpointGetSnippetsByUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	snippets, err := a.useCases.GetSnippetsByUser(usecases.UserId(userId), GetCurrentUid(r))
+	snippets, err := a.useCases.GetSnippetsByUser(types.UserId(userId), GetCurrentUid(r))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return

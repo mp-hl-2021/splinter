@@ -5,7 +5,7 @@ package v1
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 	"strconv"
 )
@@ -17,7 +17,7 @@ func (a *Api) endpointDeleteSnippet(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, err, http.StatusBadRequest)
 		return
 	}
-	err = a.useCases.DeleteSnippet(GetCurrentUid(r), usecases.SnippetId(snippetId))
+	err = a.useCases.DeleteSnippet(GetCurrentUid(r), types.SnippetId(snippetId))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return

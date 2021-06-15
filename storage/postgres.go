@@ -5,7 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/mp-hl-2021/splinter/auth"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 )
 
 type Postgres struct {
@@ -25,35 +25,42 @@ func (p Postgres) Close() error {
 	return p.db.Close()
 }
 
-func (p Postgres) AddSnippet(snippet usecases.Snippet) (usecases.SnippetId, error) {
+func (p Postgres) AddSnippet(snippet types.Snippet) (types.SnippetId, error) {
 	var id int
 	err := p.db.QueryRow(`
 	insert into snippet (contents, language, author, createdAt) values
 	($1, $2, $3, now()) returning (id);
 `, snippet.Contents, snippet.Language, snippet.Author).Scan(&id)
 	if err != nil {
-		return usecases.SnippetId(0), err
+		return types.SnippetId(0), err
 	}
 
-	return usecases.SnippetId(id), nil
+	return types.SnippetId(id), nil
 }
 
-func (p Postgres) GetSnippetsByUser(user usecases.UserId) ([]usecases.Snippet, error) {
+func (p Postgres) SetSnippetHighlight(snippet types.SnippetId, highlight string) error {
+	_, err := p.db.Exec(`
+	update snippet set highlighted = $1 where id = $2;
+`, highlight, snippet)
+	return err
+}
+
+func (p Postgres) GetSnippetsByUser(user types.UserId) ([]types.Snippet, error) {
 	rows, err := p.db.Query(`
-select id, contents, language, author, likes, dislikes, createdAt from snippet where author = $1
+select id, contents, highlighted, language, author, likes, dislikes, createdAt from snippet where author = $1
 `, user)
 
 	if err != nil {
-		return []usecases.Snippet{}, err
+		return []types.Snippet{}, err
 	}
 
-	var res []usecases.Snippet
+	var res []types.Snippet
 
 	for rows.Next() {
-		var s usecases.Snippet
-		err = rows.Scan(&s.Id, &s.Contents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
+		var s types.Snippet
+		err = rows.Scan(&s.Id, &s.Contents, &s.HighlightedContents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
 		if err != nil {
-			return []usecases.Snippet{}, err
+			return []types.Snippet{}, err
 		}
 		res = append(res, s)
 	}
@@ -61,22 +68,22 @@ select id, contents, language, author, likes, dislikes, createdAt from snippet w
 	return res, nil
 }
 
-func (p Postgres) GetSnippetsByLanguage(language usecases.ProgrammingLanguage) ([]usecases.Snippet, error) {
+func (p Postgres) GetSnippetsByLanguage(language types.ProgrammingLanguage) ([]types.Snippet, error) {
 	rows, err := p.db.Query(`
-select id, contents, language, author, likes, dislikes, createdAt from snippet where language = $1
+select id, contents, highlighted, language, author, likes, dislikes, createdAt from snippet where language = $1
 `, language)
 
 	if err != nil {
-		return []usecases.Snippet{}, err
+		return []types.Snippet{}, err
 	}
 
-	var res []usecases.Snippet
+	var res []types.Snippet
 
 	for rows.Next() {
-		var s usecases.Snippet
-		err = rows.Scan(&s.Id, &s.Contents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
+		var s types.Snippet
+		err = rows.Scan(&s.Id, &s.Contents, &s.HighlightedContents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
 		if err != nil {
-			return []usecases.Snippet{}, err
+			return []types.Snippet{}, err
 		}
 		res = append(res, s)
 	}
@@ -84,28 +91,28 @@ select id, contents, language, author, likes, dislikes, createdAt from snippet w
 	return res, nil
 }
 
-func (p Postgres) GetSnippet(snippet usecases.SnippetId) (usecases.Snippet, error) {
+func (p Postgres) GetSnippet(snippet types.SnippetId) (types.Snippet, error) {
 	row := p.db.QueryRow(`
-select id, contents, language, author, likes, dislikes, createdAt from snippet where id = $1
+select id, contents, highlighted, language, author, likes, dislikes, createdAt from snippet where id = $1
 `, snippet)
 
-	var s usecases.Snippet
-	err := row.Scan(&s.Id, &s.Contents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
+	var s types.Snippet
+	err := row.Scan(&s.Id, &s.Contents, &s.HighlightedContents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
 	if err != nil {
-		return usecases.Snippet{}, err
+		return types.Snippet{}, err
 	}
 
 	return s, nil
 }
 
-func (p Postgres) DeleteSnippet(snippet usecases.SnippetId) error {
+func (p Postgres) DeleteSnippet(snippet types.SnippetId) error {
 	_, err := p.db.Exec(`
 delete from snippet where id = $1
 `, snippet)
 	return err
 }
 
-func (p Postgres) Vote(user usecases.UserId, snippet usecases.SnippetId, vote int) error {
+func (p Postgres) Vote(user types.UserId, snippet types.SnippetId, vote int) error {
 	_, err := p.db.Exec(`
 insert into vote (snippet, "user", vote) values ($1, $2, $3)
 on conflict on constraint vote_pkey do update
@@ -114,7 +121,7 @@ set vote = $3;
 	return err
 }
 
-func (p Postgres) GetVote(user usecases.UserId, snippet usecases.SnippetId) (int, error) {
+func (p Postgres) GetVote(user types.UserId, snippet types.SnippetId) (int, error) {
 	row := p.db.QueryRow(`
 select vote from vote where snippet = $1 and user = $2;
 `, snippet, user)
@@ -128,7 +135,7 @@ select vote from vote where snippet = $1 and user = $2;
 	return vote, nil
 }
 
-func (p Postgres) AddComment(comment usecases.Comment) (usecases.CommentId, error) {
+func (p Postgres) AddComment(comment types.Comment) (types.CommentId, error) {
 	var id int
 	err := p.db.QueryRow(`
 insert into comment (contents, snippet, author, createdAt) values ($1, $2, $3, now()) returning (id);
@@ -137,39 +144,39 @@ insert into comment (contents, snippet, author, createdAt) values ($1, $2, $3, n
 		return 0, err
 	}
 
-	return usecases.CommentId(id), nil
+	return types.CommentId(id), nil
 }
 
-func (p Postgres) GetComment(comment usecases.CommentId) (usecases.Comment, error) {
+func (p Postgres) GetComment(comment types.CommentId) (types.Comment, error) {
 	row := p.db.QueryRow(`
 select id, contents, snippet, author, createdAt from comment where id = $1
 `, comment)
 
-	var c usecases.Comment
+	var c types.Comment
 	err := row.Scan(&c.Id, &c.Contents, &c.Snippet, &c.Author, &c.CreatedAt)
 	if err != nil {
-		return usecases.Comment{}, err
+		return types.Comment{}, err
 	}
 
 	return c, nil
 }
 
-func (p Postgres) GetComments(snippet usecases.SnippetId) ([]usecases.Comment, error) {
+func (p Postgres) GetComments(snippet types.SnippetId) ([]types.Comment, error) {
 	rows, err := p.db.Query(`
 select id, contents, snippet, author, createdAt from comment where snippet = $1
 `, snippet)
 
 	if err != nil {
-		return []usecases.Comment{}, err
+		return []types.Comment{}, err
 	}
 
-	var res []usecases.Comment
+	var res []types.Comment
 
 	for rows.Next() {
-		var c usecases.Comment
+		var c types.Comment
 		err = rows.Scan(&c.Id, &c.Contents, &c.Snippet, &c.Author, &c.CreatedAt)
 		if err != nil {
-			return []usecases.Comment{}, err
+			return []types.Comment{}, err
 		}
 		res = append(res, c)
 	}
@@ -177,7 +184,7 @@ select id, contents, snippet, author, createdAt from comment where snippet = $1
 	return res, nil
 }
 
-func (p Postgres) DeleteComment(comment usecases.CommentId) error {
+func (p Postgres) DeleteComment(comment types.CommentId) error {
 	_, err := p.db.Exec(`
 delete from comment where id = $1
 `, comment)

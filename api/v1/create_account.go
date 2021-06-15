@@ -5,7 +5,7 @@ package v1
 
 import (
 	"encoding/json"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 )
 
@@ -15,7 +15,7 @@ type createAccountBody struct {
 }
 
 type createAccountResponse struct {
-	User usecases.User
+	User types.User
 }
 
 func (a *Api) endpointCreateAccount(w http.ResponseWriter, r *http.Request) {

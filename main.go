@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/mp-hl-2021/splinter/api"
 	"github.com/mp-hl-2021/splinter/auth"
+	"github.com/mp-hl-2021/splinter/highlighter"
 	"github.com/mp-hl-2021/splinter/storage"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"io/ioutil"
@@ -31,10 +32,15 @@ func main() {
 		panic(err)
 	}
 
+	h := highlighter.MakeHighlighter(postgres)
+
+	go h.Run()
+
 	userInterface := &usecases.DelegatedUserInterface{
 		UserStorage:    postgres,
 		SnippetStorage: postgres,
 		Auth:           a,
+		Highlighter:    h,
 	}
 
 	service := api.NewApi(userInterface, a)

@@ -3,7 +3,7 @@ package storage
 import (
 	"errors"
 	"github.com/mp-hl-2021/splinter/auth"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"sync"
 	"time"
 )
@@ -15,15 +15,15 @@ var (
 )
 
 type SnippetVote struct {
-	UserId    usecases.UserId
-	SnippetId usecases.SnippetId
+	UserId    types.UserId
+	SnippetId types.SnippetId
 	Vote      int
 }
 
 type Memory struct {
-	snippets           []usecases.Snippet
+	snippets           []types.Snippet
 	votes              []SnippetVote
-	comments           []usecases.Comment
+	comments           []types.Comment
 	accountsById       map[uint]auth.Account
 	accountsByUsername map[string]auth.Account
 	nextId             uint
@@ -54,10 +54,10 @@ func (m *Memory) CreateAccount(cred auth.Credentials) (auth.Account, error) {
 	return a, nil
 }
 
-func (m *Memory) AddSnippet(snippet usecases.Snippet) (usecases.SnippetId, error) {
+func (m *Memory) AddSnippet(snippet types.Snippet) (types.SnippetId, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	snippet.Id = usecases.SnippetId(m.nextId)
+	snippet.Id = types.SnippetId(m.nextId)
 	snippet.CreatedAt = time.Now()
 	m.nextId++
 	m.snippets = append(m.snippets, snippet)
@@ -84,10 +84,10 @@ func (m *Memory) GetAccountByUsername(username string) (auth.Account, error) {
 	return a, nil
 }
 
-func (m *Memory) GetSnippetsByUser(user usecases.UserId) ([]usecases.Snippet, error) {
+func (m *Memory) GetSnippetsByUser(user types.UserId) ([]types.Snippet, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	var res []usecases.Snippet
+	var res []types.Snippet
 	for _, s := range m.snippets {
 		if s.Author == user {
 			res = append(res, s)
@@ -96,10 +96,10 @@ func (m *Memory) GetSnippetsByUser(user usecases.UserId) ([]usecases.Snippet, er
 	return res, nil
 }
 
-func (m *Memory) GetSnippetsByLanguage(language usecases.ProgrammingLanguage) ([]usecases.Snippet, error) {
+func (m *Memory) GetSnippetsByLanguage(language types.ProgrammingLanguage) ([]types.Snippet, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	var res []usecases.Snippet
+	var res []types.Snippet
 	for _, s := range m.snippets {
 		if s.Language == language {
 			res = append(res, s)
@@ -108,7 +108,7 @@ func (m *Memory) GetSnippetsByLanguage(language usecases.ProgrammingLanguage) ([
 	return res, nil
 }
 
-func (m *Memory) GetSnippet(snippet usecases.SnippetId) (usecases.Snippet, error) {
+func (m *Memory) GetSnippet(snippet types.SnippetId) (types.Snippet, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, s := range m.snippets {
@@ -116,13 +116,13 @@ func (m *Memory) GetSnippet(snippet usecases.SnippetId) (usecases.Snippet, error
 			return s, nil
 		}
 	}
-	return usecases.Snippet{}, NoSuchSnippetErr
+	return types.Snippet{}, NoSuchSnippetErr
 }
 
-func (m *Memory) DeleteSnippet(snippet usecases.SnippetId) error {
+func (m *Memory) DeleteSnippet(snippet types.SnippetId) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	var res []usecases.Snippet
+	var res []types.Snippet
 	for _, s := range m.snippets {
 		if s.Id != snippet {
 			res = append(res, s)
@@ -132,7 +132,7 @@ func (m *Memory) DeleteSnippet(snippet usecases.SnippetId) error {
 	return nil
 }
 
-func (m *Memory) Vote(user usecases.UserId, snippet usecases.SnippetId, vote int) error {
+func (m *Memory) Vote(user types.UserId, snippet types.SnippetId, vote int) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if vote != -1 && vote != 0 && vote != 1 {
@@ -155,7 +155,7 @@ func (m *Memory) Vote(user usecases.UserId, snippet usecases.SnippetId, vote int
 	return nil
 }
 
-func (m *Memory) GetVote(user usecases.UserId, snippet usecases.SnippetId) (int, error) {
+func (m *Memory) GetVote(user types.UserId, snippet types.SnippetId) (int, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, v := range m.votes {
@@ -166,17 +166,17 @@ func (m *Memory) GetVote(user usecases.UserId, snippet usecases.SnippetId) (int,
 	return 0, nil
 }
 
-func (m *Memory) AddComment(comment usecases.Comment) (usecases.CommentId, error) {
+func (m *Memory) AddComment(comment types.Comment) (types.CommentId, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	comment.Id = usecases.CommentId(m.nextId)
+	comment.Id = types.CommentId(m.nextId)
 	comment.CreatedAt = time.Now()
 	m.nextId++
 	m.comments = append(m.comments, comment)
 	return comment.Id, nil
 }
 
-func (m *Memory) GetComment(comment usecases.CommentId) (usecases.Comment, error) {
+func (m *Memory) GetComment(comment types.CommentId) (types.Comment, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, c := range m.comments {
@@ -185,13 +185,13 @@ func (m *Memory) GetComment(comment usecases.CommentId) (usecases.Comment, error
 		}
 	}
 
-	return usecases.Comment{}, NoSuchCommentErr
+	return types.Comment{}, NoSuchCommentErr
 }
 
-func (m *Memory) GetComments(snippet usecases.SnippetId) ([]usecases.Comment, error) {
+func (m *Memory) GetComments(snippet types.SnippetId) ([]types.Comment, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	var res []usecases.Comment
+	var res []types.Comment
 	for _, c := range m.comments {
 		if c.Snippet == snippet {
 			res = append(res, c)
@@ -201,10 +201,10 @@ func (m *Memory) GetComments(snippet usecases.SnippetId) ([]usecases.Comment, er
 	return res, nil
 }
 
-func (m *Memory) DeleteComment(comment usecases.CommentId) error {
+func (m *Memory) DeleteComment(comment types.CommentId) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	var res []usecases.Comment
+	var res []types.Comment
 	for _, c := range m.comments {
 		if c.Id != comment {
 			res = append(res, c)

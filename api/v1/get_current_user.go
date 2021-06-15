@@ -5,12 +5,12 @@ package v1
 
 import (
 	"encoding/json"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 )
 
 type getCurrentUserResponse struct {
-	User usecases.User
+	User types.User
 }
 
 func (a *Api) endpointGetCurrentUser(w http.ResponseWriter, r *http.Request) {

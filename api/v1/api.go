@@ -5,12 +5,13 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/mp-hl-2021/splinter/auth"
+	"github.com/mp-hl-2021/splinter/types"
 	"github.com/mp-hl-2021/splinter/usecases"
 	"net/http"
 )
 
 type Api struct {
-	useCases usecases.UserInterface
+	useCases      usecases.UserInterface
 	authenticator auth.Authenticator
 }
 
@@ -27,7 +28,7 @@ func makeAuthMiddleware(a auth.Authenticator) func (handler http.Handler) http.H
 				WriteError(w, err, http.StatusForbidden)
 				return
 			}
-			context.Set(r, "uid", usecases.UserId(uid))
+			context.Set(r, "uid", types.UserId(uid))
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -66,6 +67,6 @@ func WriteError(w http.ResponseWriter, err error, statusCode int) {
 	})
 }
 
-func GetCurrentUid(r *http.Request) usecases.UserId {
-	return context.Get(r, "uid").(usecases.UserId)
+func GetCurrentUid(r *http.Request) types.UserId {
+	return context.Get(r, "uid").(types.UserId)
 }

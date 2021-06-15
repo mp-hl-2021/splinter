@@ -5,7 +5,7 @@ package v1
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 	"strconv"
 )
@@ -17,7 +17,7 @@ func (a *Api) endpointDeleteComment(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, err, http.StatusBadRequest)
 		return
 	}
-	err = a.useCases.DeleteComment(GetCurrentUid(r), usecases.CommentId(commentId))
+	err = a.useCases.DeleteComment(GetCurrentUid(r), types.CommentId(commentId))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return
