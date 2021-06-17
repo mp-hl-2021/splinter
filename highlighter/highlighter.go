@@ -2,7 +2,9 @@ package highlighter
 
 import (
 	"github.com/mp-hl-2021/splinter/types"
+	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 )
 
@@ -11,15 +13,27 @@ type Highlighter struct {
 	storage  types.SnippetStorage
 }
 
-func MakeHighlighter(storage types.SnippetStorage) Highlighter {
+func New(storage types.SnippetStorage) Highlighter {
 	return Highlighter{
-		make(chan types.Snippet),
+		make(chan types.Snippet, 256),
 		storage,
 	}
 }
 
 func highlightSnippet(snippet *types.Snippet) (string, error) {
-	out, err := exec.Command("pygmentize", "-l", string(snippet.Language), "-f", "html").Output()
+	input, err := ioutil.TempFile("", "")
+	if err != nil {
+		return "", err
+	}
+	defer os.Remove(input.Name())
+	defer input.Close()
+
+	if _, err = input.WriteString(snippet.Contents); err != nil {
+		return "", err
+	}
+
+	cmd := exec.Command("pygmentize", "-l", string(snippet.Language), "-f", "html", input.Name())
+	out, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}

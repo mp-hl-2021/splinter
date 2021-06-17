@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -17,6 +18,7 @@ func main() {
 	privateKeyPath := flag.String("privateKey", "app.rsa", "file path")
 	publicKeyPath := flag.String("publicKey", "app.rsa.pub", "file path")
 	connStr := flag.String("connStr", "user=postgres password=postgres host=db dbname=postgres sslmode=disable", "postgres connection string")
+	highlightWorkers := flag.String("highlightWorkers", "8", "number of highlighter workers")
 	flag.Parse()
 
 	privateKeyBytes, err := ioutil.ReadFile(*privateKeyPath)
@@ -32,9 +34,16 @@ func main() {
 		panic(err)
 	}
 
-	h := highlighter.MakeHighlighter(postgres)
+	h := highlighter.New(postgres)
 
-	go h.Run()
+	w, err := strconv.Atoi(*highlightWorkers)
+	if err != nil {
+		panic(err)
+	}
+
+	for i := 0; i < w; i += 1 {
+		go h.Run()
+	}
 
 	userInterface := &usecases.DelegatedUserInterface{
 		UserStorage:    postgres,
