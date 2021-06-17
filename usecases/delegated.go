@@ -6,6 +6,7 @@ import (
 	"github.com/mp-hl-2021/splinter/highlighter"
 	"github.com/mp-hl-2021/splinter/types"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 )
 
 var (
@@ -86,7 +87,9 @@ func (u DelegatedUserInterface) PostSnippet(author types.UserId, contents string
 		return types.Snippet{}, err
 	}
 
-	u.Highlighter.Post(snippet)
+	if err = u.Highlighter.Post(snippet); err != nil {
+		log.Printf("[WARN] Error when queueing highlighting task: %e", err)
+	}
 
 	return snippet, nil
 }

@@ -1,12 +1,15 @@
 package highlighter
 
 import (
+	"errors"
 	"github.com/mp-hl-2021/splinter/types"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 )
+
+var ChannelIsFullErr = errors.New("channel is full")
 
 type Highlighter struct {
 	requests chan types.Snippet
@@ -56,6 +59,11 @@ func (h *Highlighter) Run() {
 	}
 }
 
-func (h *Highlighter) Post(snippet types.Snippet) {
-	h.requests <- snippet
+func (h *Highlighter) Post(snippet types.Snippet) error {
+	select {
+	case h.requests <- snippet:
+		return nil
+	default:
+		return ChannelIsFullErr
+	}
 }
