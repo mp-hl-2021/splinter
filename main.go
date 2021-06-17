@@ -19,6 +19,7 @@ func main() {
 	publicKeyPath := flag.String("publicKey", "app.rsa.pub", "file path")
 	connStr := flag.String("connStr", "user=postgres password=postgres host=db dbname=postgres sslmode=disable", "postgres connection string")
 	highlightWorkers := flag.String("highlightWorkers", "8", "number of highlighter workers")
+	highlightQueueSize := flag.String("highlightQueueSize", "256", "highlighter queue size")
 	flag.Parse()
 
 	privateKeyBytes, err := ioutil.ReadFile(*privateKeyPath)
@@ -34,7 +35,12 @@ func main() {
 		panic(err)
 	}
 
-	h := highlighter.New(postgres)
+	hq, err := strconv.Atoi(*highlightQueueSize)
+	if err != nil {
+		panic(err)
+	}
+
+	h := highlighter.New(postgres, hq)
 
 	w, err := strconv.Atoi(*highlightWorkers)
 	if err != nil {

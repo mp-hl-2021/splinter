@@ -13,9 +13,9 @@ type Highlighter struct {
 	storage  types.SnippetStorage
 }
 
-func New(storage types.SnippetStorage) Highlighter {
+func New(storage types.SnippetStorage, size int) Highlighter {
 	return Highlighter{
-		make(chan types.Snippet, 256),
+		make(chan types.Snippet, size),
 		storage,
 	}
 }
