@@ -5,17 +5,17 @@ package v1
 
 import (
 	"encoding/json"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 )
 
 type postSnippetBody struct {
 	Contents string
-	Language usecases.ProgrammingLanguage
+	Language types.ProgrammingLanguage
 }
 
 type postSnippetResponse struct {
-	Snippet usecases.Snippet
+	Snippet types.Snippet
 }
 
 func (a *Api) endpointPostSnippet(w http.ResponseWriter, r *http.Request) {

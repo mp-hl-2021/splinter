@@ -5,7 +5,7 @@ package v1
 
 import (
 	"encoding/json"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 )
 
@@ -15,7 +15,7 @@ type authenticateBody struct {
 }
 
 type authenticateResponse struct {
-	Token usecases.Token
+	Token types.Token
 }
 
 func (a *Api) endpointAuthenticate(w http.ResponseWriter, r *http.Request) {

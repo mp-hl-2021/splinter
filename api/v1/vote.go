@@ -6,7 +6,7 @@ package v1
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 	"strconv"
 )
@@ -29,7 +29,7 @@ func (a *Api) endpointVote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.useCases.Vote(GetCurrentUid(r), usecases.SnippetId(snippetId), b.Vote); err != nil {
+	if err := a.useCases.Vote(GetCurrentUid(r), types.SnippetId(snippetId), b.Vote); err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return
 	}

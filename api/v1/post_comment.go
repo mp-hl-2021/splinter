@@ -6,7 +6,7 @@ package v1
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 	"strconv"
 )
@@ -16,7 +16,7 @@ type postCommentBody struct {
 }
 
 type postCommentResponse struct {
-	Comment usecases.Comment
+	Comment types.Comment
 }
 
 func (a *Api) endpointPostComment(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +32,7 @@ func (a *Api) endpointPostComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Comment, err := a.useCases.PostComment(GetCurrentUid(r), b.Contents, usecases.SnippetId(snippetId))
+	Comment, err := a.useCases.PostComment(GetCurrentUid(r), b.Contents, types.SnippetId(snippetId))
 	if err != nil {
 		WriteError(w, err, http.StatusForbidden)
 		return

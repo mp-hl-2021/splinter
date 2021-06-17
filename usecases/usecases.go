@@ -1,62 +1,20 @@
 package usecases
 
-import (
-	"errors"
-	"time"
-)
-
-type ProgrammingLanguage string
-type UserId uint
-type SnippetId uint
-type CommentId uint
-type Token string
-
-var (
-	ErrInvalidLogin    = errors.New("login not found")
-	ErrInvalidPassword = errors.New("invalid password")
-)
-
-type User struct {
-	Id       UserId // Unique identifier, persists through username changes
-	Username string // Visible username, can be changed
-}
-
-type Rating struct {
-	Likes    int
-	Dislikes int
-}
-
-type Comment struct {
-	Id        CommentId
-	Contents  string
-	Snippet   SnippetId
-	Author    UserId
-	CreatedAt time.Time
-}
-
-type Snippet struct {
-	Id              SnippetId
-	Contents        string
-	Language        ProgrammingLanguage
-	Author          UserId
-	Rating          Rating
-	CurrentUserVote int
-	CreatedAt       time.Time
-}
+import "github.com/mp-hl-2021/splinter/types"
 
 type UserInterface interface {
-	CreateAccount(username, password string) (User, error)
-	Authenticate(username, password string) (Token, error)
-	GetUser(user UserId) (User, error)
+	CreateAccount(username, password string) (types.User, error)
+	Authenticate(username, password string) (types.Token, error)
+	GetUser(user types.UserId) (types.User, error)
 
-	PostSnippet(author UserId, contents string, language ProgrammingLanguage) (Snippet, error)
-	GetSnippetsByUser(user UserId, current UserId) ([]Snippet, error)
-	GetSnippetsByLanguage(language ProgrammingLanguage, current UserId) ([]Snippet, error)
-	GetSnippet(current UserId, snippet SnippetId) (Snippet, error)
-	DeleteSnippet(current UserId, snippet SnippetId) error
-	Vote(current UserId, snippet SnippetId, vote int /* ±1 */) error
+	PostSnippet(author types.UserId, contents string, language types.ProgrammingLanguage) (types.Snippet, error)
+	GetSnippetsByUser(user types.UserId, current types.UserId) ([]types.Snippet, error)
+	GetSnippetsByLanguage(language types.ProgrammingLanguage, current types.UserId) ([]types.Snippet, error)
+	GetSnippet(current types.UserId, snippet types.SnippetId) (types.Snippet, error)
+	DeleteSnippet(current types.UserId, snippet types.SnippetId) error
+	Vote(current types.UserId, snippet types.SnippetId, vote int /* ±1 */) error
 
-	PostComment(author UserId, contents string, snippet SnippetId) (Comment, error)
-	GetComments(snippet SnippetId) ([]Comment, error)
-	DeleteComment(current UserId, comment CommentId) error
+	PostComment(author types.UserId, contents string, snippet types.SnippetId) (types.Comment, error)
+	GetComments(snippet types.SnippetId) ([]types.Comment, error)
+	DeleteComment(current types.UserId, comment types.CommentId) error
 }

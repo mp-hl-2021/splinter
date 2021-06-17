@@ -6,13 +6,13 @@ package v1
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 	"strconv"
 )
 
 type getUserResponse struct {
-	User usecases.User
+	User types.User
 }
 
 func (a *Api) endpointGetUser(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func (a *Api) endpointGetUser(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, err, http.StatusBadRequest)
 		return
 	}
-	user, err := a.useCases.GetUser(usecases.UserId(userId))
+	user, err := a.useCases.GetUser(types.UserId(userId))
 	if err != nil {
 		WriteError(w, err, http.StatusNotFound)
 		return

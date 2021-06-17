@@ -6,17 +6,17 @@ package v1
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/mp-hl-2021/splinter/usecases"
+	"github.com/mp-hl-2021/splinter/types"
 	"net/http"
 )
 
 type getSnippetsByLanguageResponse struct {
-	Snippets []usecases.Snippet
+	Snippets []types.Snippet
 }
 
 func (a *Api) endpointGetSnippetsByLanguage(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	language := usecases.ProgrammingLanguage(params["language"])
+	language := types.ProgrammingLanguage(params["language"])
 
 	snippets, err := a.useCases.GetSnippetsByLanguage(language, GetCurrentUid(r))
 	if err != nil {
