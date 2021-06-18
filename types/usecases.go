@@ -37,6 +37,7 @@ type Comment struct {
 type Snippet struct {
 	Id                  SnippetId
 	Contents            string
+	HighlightedContents string
 	Language            ProgrammingLanguage
 	Author              UserId
 	Rating              Rating

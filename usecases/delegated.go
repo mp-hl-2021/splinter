@@ -3,8 +3,10 @@ package usecases
 import (
 	"errors"
 	"github.com/mp-hl-2021/splinter/auth"
+	"github.com/mp-hl-2021/splinter/highlighter"
 	"github.com/mp-hl-2021/splinter/types"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 )
 
 var (
@@ -17,6 +19,7 @@ type DelegatedUserInterface struct {
 	Auth           auth.Authenticator
 	UserStorage    auth.UserStorage
 	SnippetStorage types.SnippetStorage
+	Highlighter    highlighter.Highlighter
 }
 
 func (u *DelegatedUserInterface) CreateAccount(username, password string) (types.User, error) {
@@ -82,6 +85,10 @@ func (u DelegatedUserInterface) PostSnippet(author types.UserId, contents string
 
 	if err != nil {
 		return types.Snippet{}, err
+	}
+
+	if err = u.Highlighter.Post(snippet); err != nil {
+		log.Printf("[WARN] Error when queueing highlighting task: %e", err)
 	}
 
 	return snippet, nil

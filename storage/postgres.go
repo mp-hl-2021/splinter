@@ -38,9 +38,16 @@ func (p Postgres) AddSnippet(snippet types.Snippet) (types.SnippetId, error) {
 	return types.SnippetId(id), nil
 }
 
+func (p Postgres) SetSnippetHighlight(snippet types.SnippetId, highlight string) error {
+	_, err := p.db.Exec(`
+	update snippet set highlighted = $1 where id = $2;
+`, highlight, snippet)
+	return err
+}
+
 func (p Postgres) GetSnippetsByUser(user types.UserId) ([]types.Snippet, error) {
 	rows, err := p.db.Query(`
-select id, contents, language, author, likes, dislikes, createdAt from snippet where author = $1
+select id, contents, highlighted, language, author, likes, dislikes, createdAt from snippet where author = $1
 `, user)
 
 	if err != nil {
@@ -51,7 +58,7 @@ select id, contents, language, author, likes, dislikes, createdAt from snippet w
 
 	for rows.Next() {
 		var s types.Snippet
-		err = rows.Scan(&s.Id, &s.Contents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
+		err = rows.Scan(&s.Id, &s.Contents, &s.HighlightedContents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
 		if err != nil {
 			return []types.Snippet{}, err
 		}
@@ -63,7 +70,7 @@ select id, contents, language, author, likes, dislikes, createdAt from snippet w
 
 func (p Postgres) GetSnippetsByLanguage(language types.ProgrammingLanguage) ([]types.Snippet, error) {
 	rows, err := p.db.Query(`
-select id, contents, language, author, likes, dislikes, createdAt from snippet where language = $1
+select id, contents, highlighted, language, author, likes, dislikes, createdAt from snippet where language = $1
 `, language)
 
 	if err != nil {
@@ -74,7 +81,7 @@ select id, contents, language, author, likes, dislikes, createdAt from snippet w
 
 	for rows.Next() {
 		var s types.Snippet
-		err = rows.Scan(&s.Id, &s.Contents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
+		err = rows.Scan(&s.Id, &s.Contents, &s.HighlightedContents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
 		if err != nil {
 			return []types.Snippet{}, err
 		}
@@ -86,11 +93,11 @@ select id, contents, language, author, likes, dislikes, createdAt from snippet w
 
 func (p Postgres) GetSnippet(snippet types.SnippetId) (types.Snippet, error) {
 	row := p.db.QueryRow(`
-select id, contents, language, author, likes, dislikes, createdAt from snippet where id = $1
+select id, contents, highlighted, language, author, likes, dislikes, createdAt from snippet where id = $1
 `, snippet)
 
 	var s types.Snippet
-	err := row.Scan(&s.Id, &s.Contents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
+	err := row.Scan(&s.Id, &s.Contents, &s.HighlightedContents, &s.Language, &s.Author, &s.Rating.Likes, &s.Rating.Dislikes, &s.CreatedAt)
 	if err != nil {
 		return types.Snippet{}, err
 	}

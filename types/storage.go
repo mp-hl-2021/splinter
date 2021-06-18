@@ -6,6 +6,7 @@ type SnippetStorage interface {
 	GetSnippetsByLanguage(language ProgrammingLanguage) ([]Snippet, error)
 	GetSnippet(snippet SnippetId) (Snippet, error)
 	DeleteSnippet(snippet SnippetId) error
+	SetSnippetHighlight(snippet SnippetId, highlight string) error
 	Vote(user UserId, snippet SnippetId, vote int) error
 	GetVote(user UserId, snippet SnippetId) (int, error)
 

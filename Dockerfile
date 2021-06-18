@@ -4,7 +4,8 @@ ADD . /build/
 WORKDIR /build
 RUN CGO_ENABLED=0 GOOS=linux go build -a -o splinter main.go
 
-FROM alpine:3.13
+FROM python:3.8-slim
 COPY --from=builder /build/splinter /splinter
+RUN pip install pygments
 
 ENTRYPOINT  [ "/splinter" ]
